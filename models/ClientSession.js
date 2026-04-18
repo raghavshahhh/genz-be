@@ -12,6 +12,7 @@ const clientSessionSchema = new mongoose.Schema({
     address: String,
     orderType: { type: String, enum: ['delivery', 'takeaway'], default: 'delivery' },
     paymentMethod: { type: String, enum: ['UPI', 'COD'], default: 'COD' },
+    couponCode: { type: String, trim: true, default: '' },
   },
   expiresAt: { type: Date, required: true },
 }, { timestamps: true });

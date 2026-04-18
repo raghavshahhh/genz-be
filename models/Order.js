@@ -13,6 +13,9 @@ const orderSchema = new mongoose.Schema({
     quantity: { type: Number, default: 1 }
   }],
   subtotal: Number,
+  /** Promo discount off subtotal (before tax) */
+  discountAmount: { type: Number, default: 0 },
+  couponCode: { type: String, trim: true, default: '' },
   tax: Number,
   deliveryCharge: Number,
   total: Number,

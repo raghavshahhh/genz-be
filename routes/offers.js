@@ -2,27 +2,14 @@ const express = require('express');
 const mongoose = require('mongoose');
 const Offer = require('../models/Offer');
 const { adminAuth } = require('../middleware/adminAuth');
+const {
+  PUBLIC_DEMO_OFFERS,
+  normalizeCouponCode,
+  computeDiscountFromOffer,
+  findActiveOfferByCouponCode,
+} = require('../lib/promoOffers');
 
 const router = express.Router();
-
-const PUBLIC_DEMO_OFFERS = [
-  {
-    _id: 'demo-offer-1',
-    title: 'Weekend combo',
-    subtitle: 'Any two mains + beverage',
-    description: 'Friday–Sunday. Discount applied at checkout.',
-    active: true,
-    sortOrder: 0,
-  },
-  {
-    _id: 'demo-offer-2',
-    title: 'Free delivery',
-    subtitle: 'On orders above ₹499',
-    description: 'Within Zone 1. Auto-applied when eligible.',
-    active: true,
-    sortOrder: 1,
-  },
-];
 
 /** Public: active offers for menu page */
 router.get('/', async (req, res) => {
@@ -37,6 +24,36 @@ router.get('/', async (req, res) => {
     res.json(list);
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+/** Public: validate coupon for checkout (subtotal = cart subtotal before tax) */
+router.post('/validate-coupon', async (req, res) => {
+  try {
+    const raw = req.body?.code ?? req.body?.couponCode;
+    const subtotal = Math.max(0, Number(req.body?.subtotal) || 0);
+    const code = normalizeCouponCode(raw);
+    if (!code) {
+      return res.status(400).json({ valid: false, message: 'Enter a coupon code' });
+    }
+    const offer = await findActiveOfferByCouponCode(code);
+    if (!offer) {
+      return res.json({ valid: false, message: 'Invalid or inactive code' });
+    }
+    const hasDiscount =
+      (Number(offer.discountPercent) || 0) > 0 || (Number(offer.discountFlat) || 0) > 0;
+    if (!hasDiscount) {
+      return res.json({ valid: false, message: 'This offer has no discount configured' });
+    }
+    const discountAmount = computeDiscountFromOffer(subtotal, offer);
+    return res.json({
+      valid: true,
+      couponCode: normalizeCouponCode(offer.couponCode || code),
+      discountAmount,
+      title: offer.title,
+    });
+  } catch (err) {
+    res.status(500).json({ valid: false, error: err.message });
   }
 });
 
@@ -58,7 +75,16 @@ router.post('/', adminAuth, async (req, res) => {
     if (mongoose.connection.readyState !== 1) {
       return res.status(503).json({ error: 'Database unavailable' });
     }
-    const { title, subtitle = '', description = '', active = true, sortOrder = 0 } = req.body;
+    const {
+      title,
+      subtitle = '',
+      description = '',
+      active = true,
+      sortOrder = 0,
+      couponCode = '',
+      discountPercent = 0,
+      discountFlat = 0,
+    } = req.body;
     if (!title || typeof title !== 'string') {
       return res.status(400).json({ error: 'title is required' });
     }
@@ -68,6 +94,9 @@ router.post('/', adminAuth, async (req, res) => {
       description: String(description).trim(),
       active: Boolean(active),
       sortOrder: Number(sortOrder) || 0,
+      couponCode: typeof couponCode === 'string' ? couponCode.trim() : '',
+      discountPercent: Math.min(100, Math.max(0, Number(discountPercent) || 0)),
+      discountFlat: Math.max(0, Number(discountFlat) || 0),
     });
     res.status(201).json(doc);
   } catch (err) {
@@ -89,6 +118,13 @@ router.patch('/:id', adminAuth, async (req, res) => {
     if (typeof req.body.description === 'string') patch.description = req.body.description.trim();
     if (typeof req.body.active === 'boolean') patch.active = req.body.active;
     if (req.body.sortOrder != null) patch.sortOrder = Number(req.body.sortOrder) || 0;
+    if (typeof req.body.couponCode === 'string') patch.couponCode = req.body.couponCode.trim();
+    if (req.body.discountPercent != null) {
+      patch.discountPercent = Math.min(100, Math.max(0, Number(req.body.discountPercent) || 0));
+    }
+    if (req.body.discountFlat != null) {
+      patch.discountFlat = Math.max(0, Number(req.body.discountFlat) || 0);
+    }
     const doc = await Offer.findByIdAndUpdate(req.params.id, patch, { new: true }).lean();
     if (!doc) return res.status(404).json({ error: 'Not found' });
     res.json(doc);

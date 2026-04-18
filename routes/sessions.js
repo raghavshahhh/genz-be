@@ -81,6 +81,10 @@ router.put('/:sessionId', async (req, res) => {
       if (checkout.paymentMethod !== undefined) {
         $set['checkout.paymentMethod'] = checkout.paymentMethod === 'UPI' ? 'UPI' : 'COD';
       }
+      if (checkout.couponCode !== undefined) {
+        $set['checkout.couponCode'] =
+          typeof checkout.couponCode === 'string' ? checkout.couponCode : '';
+      }
     }
 
     const doc = await ClientSession.findOneAndUpdate(

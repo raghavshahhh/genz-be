@@ -2,6 +2,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 const Order = require('../models/Order');
 const { adminAuth } = require('../middleware/adminAuth');
+const {
+  normalizeCouponCode,
+  computeDiscountFromOffer,
+  findActiveOfferByCouponCode,
+} = require('../lib/promoOffers');
+
 const router = express.Router();
 
 const ALLOWED_STATUSES = ['Confirmed', 'Cooking', 'Out for Delivery', 'Delivered', 'Rejected'];
@@ -44,13 +50,61 @@ router.get('/track', async (req, res) => {
   }
 });
 
-// Place order - public
+// Place order - public (totals recomputed server-side; coupon applied to subtotal before tax)
 router.post('/', async (req, res) => {
   try {
-    const body = { ...req.body };
-    if (!body.orderType) body.orderType = 'delivery';
+    const body = req.body || {};
+    const {
+      customer,
+      items,
+      paymentMethod = 'COD',
+      sessionId,
+      zone,
+      couponCode: rawCoupon,
+    } = body;
+
+    const subtotal = Math.max(0, Number(body.subtotal) || 0);
+    const orderType = body.orderType === 'takeaway' ? 'takeaway' : 'delivery';
+    const deliveryCharge = orderType === 'delivery' && subtotal > 0 ? 30 : 0;
+
+    let discountAmount = 0;
+    let couponCodeSaved = '';
+    const couponTrimmed =
+      rawCoupon != null && typeof rawCoupon === 'string' ? rawCoupon.trim() : '';
+    if (couponTrimmed) {
+      const offer = await findActiveOfferByCouponCode(couponTrimmed);
+      if (!offer) {
+        return res.status(400).json({ error: 'Invalid or expired coupon code' });
+      }
+      discountAmount = computeDiscountFromOffer(subtotal, offer);
+      couponCodeSaved = normalizeCouponCode(offer.couponCode || couponTrimmed);
+    }
+
+    const afterDisc = Math.max(0, subtotal - discountAmount);
+    const tax = Math.round(afterDisc * 0.05);
+    const total = afterDisc + tax + deliveryCharge;
+
+    const clientTotal = Number(body.total);
+    if (Number.isFinite(clientTotal) && Math.abs(clientTotal - total) > 2) {
+      return res.status(400).json({
+        error: 'Order total mismatch. Refresh checkout and try again.',
+        serverTotal: total,
+      });
+    }
+
     const order = new Order({
-      ...body,
+      customer,
+      items,
+      subtotal,
+      discountAmount: discountAmount > 0 ? discountAmount : undefined,
+      couponCode: couponCodeSaved || undefined,
+      tax,
+      deliveryCharge,
+      total,
+      paymentMethod: paymentMethod === 'UPI' ? 'UPI' : 'COD',
+      orderType,
+      sessionId,
+      zone,
       orderNo: 'GENZ#' + Date.now().toString().slice(-6),
     });
     const savedOrder = await order.save();

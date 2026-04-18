@@ -7,6 +7,17 @@ const offerSchema = new mongoose.Schema(
     description: { type: String, trim: true, default: '' },
     active: { type: Boolean, default: true },
     sortOrder: { type: Number, default: 0 },
+    /** Checkout coupon — stored uppercase */
+    couponCode: {
+      type: String,
+      trim: true,
+      default: '',
+      set: (v) => (v == null || v === '' ? '' : String(v).trim().toUpperCase()),
+    },
+    /** If &gt; 0, discount is this % of subtotal (takes precedence over flat when both set — see computeDiscountFromOffer) */
+    discountPercent: { type: Number, default: 0, min: 0, max: 100 },
+    /** If &gt; 0 and percent is 0, fixed rupee discount off subtotal */
+    discountFlat: { type: Number, default: 0, min: 0 },
   },
   { timestamps: true },
 );
