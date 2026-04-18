@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const router = express.Router();
 
 const PUBLIC_LINKS = [
-  { to: '/', label: 'Home' },
+  { to: '/home', label: 'Home' },
   { to: '/menu', label: 'Menu' },
   { to: '/cart', label: 'Cart' },
   { to: '/checkout', label: 'Checkout' },
@@ -13,7 +13,7 @@ const PUBLIC_LINKS = [
 
 /** Shown when logged in as owner — no customer cart/checkout */
 const OWNER_NAV_LINKS = [
-  { to: '/', label: 'Home' },
+  { to: '/home', label: 'Home' },
   { to: '/menu', label: 'Menu' },
   { to: '/admin/menu', label: 'Manage menu' },
   { to: '/track', label: 'Track' },

@@ -129,6 +129,7 @@ app.use('/api/menu', require('./routes/menu'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/sessions', require('./routes/sessions'));
 app.use('/api/nav', require('./routes/nav'));
+app.use('/api/offers', require('./routes/offers'));
 
 // Seed demo data
 app.post('/api/seed', async (req, res) => {
