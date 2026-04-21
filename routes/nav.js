@@ -16,6 +16,7 @@ const OWNER_NAV_LINKS = [
   { to: '/home', label: 'Home' },
   { to: '/menu', label: 'Menu' },
   { to: '/admin/menu', label: 'Manage menu' },
+  { to: '/admin/payment', label: 'Payment' },
   { to: '/track', label: 'Track' },
 ];
 
