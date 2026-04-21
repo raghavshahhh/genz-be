@@ -18,6 +18,8 @@ const offerSchema = new mongoose.Schema(
     discountPercent: { type: Number, default: 0, min: 0, max: 100 },
     /** If &gt; 0 and percent is 0, fixed rupee discount off subtotal */
     discountFlat: { type: Number, default: 0, min: 0 },
+    /** Offer valid through this instant (inclusive of that moment). Omit or null = no expiry (legacy). */
+    expiresAt: { type: Date, default: null },
   },
   { timestamps: true },
 );
