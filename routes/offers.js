@@ -2,12 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const Offer = require('../models/Offer');
 const { adminAuth } = require('../middleware/adminAuth');
-const {
-  PUBLIC_DEMO_OFFERS,
-  normalizeCouponCode,
-  computeDiscountFromOffer,
-  findActiveOfferByCouponCode,
-} = require('../lib/promoOffers');
+const { normalizeCouponCode, computeDiscountFromOffer, findActiveOfferByCouponCode } = require('../lib/promoOffers');
 
 const router = express.Router();
 
@@ -17,9 +12,6 @@ router.get('/', async (req, res) => {
     let list = [];
     if (mongoose.connection.readyState === 1) {
       list = await Offer.find({ active: true }).sort({ sortOrder: 1, createdAt: -1 }).lean();
-    }
-    if (list.length === 0) {
-      list = PUBLIC_DEMO_OFFERS;
     }
     res.json(list);
   } catch (err) {
