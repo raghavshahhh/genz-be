@@ -140,34 +140,10 @@ app.post('/api/seed', async (req, res) => {
   await MenuItem.deleteMany({});
   await DeliveryZone.deleteMany({});
   await Order.deleteMany({});
-  
-  const demoItems = [
-    { name: 'Veg Noodles', category: 'Chinese', veg: true, halfPrice: 80, fullPrice: 140, available: true, isSpecial: true },
-    { name: 'Hakka Noodles', category: 'Chinese', veg: true, halfPrice: 95, fullPrice: 170, available: true },
-    { name: 'Schezwan Noodles', category: 'Chinese', veg: false, halfPrice: 110, fullPrice: 190, available: true },
-    { name: 'Chicken Momo', category: 'Momo', veg: false, halfPrice: 90, fullPrice: 160, available: true },
-    { name: 'Paneer Momo', category: 'Momo', veg: true, halfPrice: 85, fullPrice: 150, available: true },
-    { name: 'Fried Momo', category: 'Momo', veg: false, halfPrice: 110, fullPrice: 180, available: true, isSpecial: true },
-    { name: 'Tandoori Chicken', category: 'Tandoor', veg: false, halfPrice: 180, fullPrice: 320, available: true },
-    { name: 'Paneer Tikka', category: 'Tandoor', veg: true, halfPrice: 140, fullPrice: 260, available: true },
-    { name: 'Seekh Kebab', category: 'Tandoor', veg: false, halfPrice: 170, fullPrice: 300, available: true },
-    { name: 'Butter Chicken', category: 'Main Course', veg: false, halfPrice: 190, fullPrice: 340, available: true, isSpecial: true },
-    { name: 'Kadai Paneer', category: 'Main Course', veg: true, halfPrice: 160, fullPrice: 290, available: true },
-    { name: 'Dal Makhani', category: 'Main Course', veg: true, halfPrice: 140, fullPrice: 250, available: true },
-    { name: 'Chicken Biryani', category: 'Biryani', veg: false, halfPrice: 170, fullPrice: 310, available: true },
-    { name: 'Veg Biryani', category: 'Biryani', veg: true, halfPrice: 140, fullPrice: 260, available: true },
-    { name: 'Hyderabadi Biryani', category: 'Biryani', veg: false, halfPrice: 190, fullPrice: 340, available: true, isSpecial: true },
-    { name: 'Masala Fries', category: 'Snacks', veg: true, halfPrice: 70, fullPrice: 120, available: true },
-    { name: 'Crispy Corn', category: 'Snacks', veg: true, halfPrice: 85, fullPrice: 150, available: true },
-    { name: 'Chicken Wings', category: 'Snacks', veg: false, halfPrice: 130, fullPrice: 220, available: true },
-    { name: 'Cold Coffee', category: 'Beverages', veg: true, halfPrice: 60, fullPrice: 110, available: true },
-    { name: 'Lemon Iced Tea', category: 'Beverages', veg: true, halfPrice: 55, fullPrice: 100, available: true },
-    { name: 'Fresh Lime Soda', category: 'Beverages', veg: true, halfPrice: 50, fullPrice: 90, available: true },
-    { name: 'Chocolate Brownie', category: 'Dessert', veg: true, halfPrice: 80, fullPrice: 140, available: true },
-    { name: 'Gulab Jamun', category: 'Dessert', veg: true, halfPrice: 70, fullPrice: 120, available: true },
-    { name: 'Kulfi Falooda', category: 'Dessert', veg: true, halfPrice: 90, fullPrice: 160, available: true },
-  ];
-  
+
+  const { getMenuSeedDocuments } = require('./lib/menuSeed');
+  const demoItems = getMenuSeedDocuments();
+
   const createdItems = await MenuItem.insertMany(demoItems);
   const zones = await DeliveryZone.insertMany([
     { name: 'Zone 1 (0-3km)', charge: 30, minOrder: 200 },

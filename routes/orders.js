@@ -12,6 +12,46 @@ const router = express.Router();
 
 const ALLOWED_STATUSES = ['Confirmed', 'Cooking', 'Out for Delivery', 'Delivered', 'Rejected'];
 
+function csvEscape(val) {
+  if (val == null || val === '') return '';
+  const s = String(val);
+  if (/[",\r\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+}
+
+function orderToCsvRows(order) {
+  const items = (order.items || [])
+    .map((line) => {
+      const name =
+        line.item && typeof line.item === 'object' && line.item.name
+          ? line.item.name
+          : typeof line.item === 'string'
+            ? line.item
+            : 'Item';
+      return `${name} (${line.size || 'full'}) x${line.quantity ?? 1}`;
+    })
+    .join('; ');
+  return [
+    csvEscape(order.orderNo),
+    csvEscape(order.createdAt ? new Date(order.createdAt).toISOString() : ''),
+    csvEscape(order.customer?.name),
+    csvEscape(order.customer?.phone),
+    csvEscape((order.customer?.address || '').replace(/\r?\n/g, ' ')),
+    csvEscape(order.status),
+    order.subtotal ?? '',
+    order.discountAmount ?? '',
+    csvEscape(order.couponCode),
+    order.tax ?? '',
+    order.deliveryCharge ?? '',
+    order.total ?? '',
+    csvEscape(order.paymentMethod),
+    csvEscape(order.orderType),
+    csvEscape(order.zone),
+    csvEscape(order.sessionId),
+    csvEscape(items),
+  ];
+}
+
 function emitOrderUpdate(io, order) {
   const doc = order && typeof order.toObject === 'function' ? order.toObject() : order;
   io.to('dashboard').emit('order-updated', doc);
@@ -147,6 +187,92 @@ router.get('/', adminAuth, async (req, res) => {
     res.json(orders);
   } catch (err) {
     res.json([]);
+  }
+});
+
+/** Download all orders as CSV — admin only */
+router.get('/export/csv', adminAuth, async (req, res) => {
+  try {
+    const orders = await Order.find().sort({ createdAt: -1 }).populate('items.item').lean();
+    const headers = [
+      'orderNo',
+      'createdAt',
+      'customerName',
+      'customerPhone',
+      'customerAddress',
+      'status',
+      'subtotal',
+      'discountAmount',
+      'couponCode',
+      'tax',
+      'deliveryCharge',
+      'total',
+      'paymentMethod',
+      'orderType',
+      'zone',
+      'sessionId',
+      'items',
+    ];
+    const lines = [headers.join(',')];
+    for (const o of orders) {
+      lines.push(orderToCsvRows(o).join(','));
+    }
+    const body = `\uFEFF${lines.join('\r\n')}`;
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="genz-orders-${Date.now()}.csv"`);
+    res.send(body);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/** Delete many orders or all — admin only */
+router.post('/bulk-delete', adminAuth, async (req, res) => {
+  try {
+    const { ids, deleteAll, confirm } = req.body || {};
+    if (deleteAll === true) {
+      if (confirm !== 'DELETE_ALL_ORDERS') {
+        return res.status(400).json({ error: 'Invalid confirmation. Send confirm: "DELETE_ALL_ORDERS".' });
+      }
+      const r = await Order.deleteMany({});
+      if (req.io) {
+        req.io.to('dashboard').emit('orders-bulk-deleted', { deleteAll: true });
+      }
+      return res.json({ ok: true, deletedCount: r.deletedCount });
+    }
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: 'Provide non-empty ids array, or deleteAll with confirm.' });
+    }
+    const valid = ids.filter((id) => mongoose.Types.ObjectId.isValid(String(id)));
+    if (valid.length === 0) {
+      return res.status(400).json({ error: 'No valid order ids' });
+    }
+    const r = await Order.deleteMany({ _id: { $in: valid } });
+    if (req.io) {
+      req.io.to('dashboard').emit('orders-bulk-deleted', { ids: valid });
+    }
+    return res.json({ ok: true, deletedCount: r.deletedCount });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/** Delete single order — admin only */
+router.delete('/:id', adminAuth, async (req, res) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid order id' });
+    }
+    const order = await Order.findByIdAndDelete(req.params.id);
+    if (!order) {
+      return res.status(404).json({ error: 'Order not found' });
+    }
+    if (req.io) {
+      req.io.to('dashboard').emit('order-deleted', { _id: req.params.id });
+    }
+    res.json({ ok: true, deleted: req.params.id });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

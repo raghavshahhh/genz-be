@@ -35,36 +35,7 @@ router.get('/', async (req, res) => {
     }
 
     if (items.length === 0) {
-      items = [
-        {
-          _id: 'demo1',
-          name: 'Veg Noodles',
-          category: 'Chinese',
-          veg: true,
-          halfPrice: 80,
-          fullPrice: 140,
-          available: true,
-          isSpecial: true,
-        },
-        {
-          _id: 'demo2',
-          name: 'Chicken Momo',
-          category: 'Momo',
-          veg: false,
-          halfPrice: 90,
-          fullPrice: 160,
-          available: true,
-        },
-        {
-          _id: 'demo3',
-          name: 'Tandoori Chicken',
-          category: 'Tandoor',
-          veg: false,
-          halfPrice: 180,
-          fullPrice: 320,
-          available: true,
-        },
-      ];
+      return res.status(404).json({ error: 'No items found' });
     }
     res.json(items);
   } catch (err) {
@@ -132,7 +103,7 @@ router.post('/', adminAuth, async (req, res) => {
   }
 });
 
-// Toggle “not serving today” — resets customer visibility next calendar day
+// Toggle “not serving today” — resets customer visibility next calendar day (before generic PATCH /:id)
 router.patch('/:id/serving-today', adminAuth, async (req, res) => {
   try {
     if (mongoose.connection.readyState !== 1) {
@@ -159,6 +130,60 @@ router.patch('/:id/serving-today', adminAuth, async (req, res) => {
     }
     const offToday = item.servingDayKey === today && item.unavailableToday === true;
     res.json({ ...item, offToday });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update menu item — admin only
+router.patch('/:id', adminAuth, async (req, res) => {
+  try {
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ error: 'Database unavailable' });
+    }
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ error: 'Invalid id' });
+    }
+    const allowed = [
+      'name',
+      'category',
+      'veg',
+      'halfPrice',
+      'fullPrice',
+      'available',
+      'isSpecial',
+      'imageUrl',
+    ];
+    const updates = {};
+    for (const key of allowed) {
+      if (req.body[key] === undefined) continue;
+      if (key === 'halfPrice' || key === 'fullPrice') {
+        const n = Number(req.body[key]);
+        if (Number.isNaN(n) || n < 0) {
+          return res.status(400).json({ error: `${key} must be a non-negative number` });
+        }
+        updates[key] = n;
+      } else if (key === 'veg' || key === 'available' || key === 'isSpecial') {
+        updates[key] = Boolean(req.body[key]);
+      } else if (key === 'name' || key === 'category') {
+        const s = String(req.body[key]).trim();
+        if (!s) {
+          return res.status(400).json({ error: `${key} cannot be empty` });
+        }
+        updates[key] = s;
+      } else if (key === 'imageUrl') {
+        const s = req.body[key] == null ? '' : String(req.body[key]).trim();
+        updates[key] = s || undefined;
+      }
+    }
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({ error: 'No valid fields to update' });
+    }
+    const item = await MenuItem.findByIdAndUpdate(req.params.id, updates, { new: true }).lean();
+    if (!item) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    res.json(item);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

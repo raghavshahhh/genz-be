@@ -1,0 +1,102 @@
+{
+  "tandoor_starter_veg": [
+    {"name": "Paneer Tikka", "price": [150, 270]},
+    {"name": "Achari Paneer Tikka", "price": [160, 290]},
+    {"name": "Peri-Peri Paneer Tikka", "price": [170, 290]},
+    {"name": "Malai Paneer Tikka", "price": [190, 260]},
+    {"name": "Afghani Paneer Malai Tikka", "price": [199, 270]},
+    {"name": "Mushroom Tikka", "price": [null, 230]}
+  ],
+  "chaap": [
+    {"name": "Tandoori Soya Chaap", "price": [180]},
+    {"name": "Achari Soya Chaap", "price": [199]},
+    {"name": "Peri-Peri Soya Chaap", "price": [199]},
+    {"name": "Malai Soya Chaap", "price": [220]},
+    {"name": "Afghani Soya Chaap", "price": [240]}
+  ],
+  "starter_non_veg": [
+    {"name": "Chicken Tikka", "price": [210, 360]},
+    {"name": "Chicken Malai Tikka", "price": [240, 390]},
+    {"name": "Chicken Lemon Tikka", "price": [220, 360]},
+    {"name": "Chicken Kali Mirch", "price": [220, 360]},
+    {"name": "Chicken Achari Tikka", "price": [220, 360]},
+    {"name": "Chicken Afghani Tikka", "price": [250, 390]},
+    {"name": "Chicken Tandoori", "price": [230, 390]},
+    {"name": "Chicken Sheekh Kabab", "price": [100, 150]},
+    {"name": "Chicken Fry", "price": [180, 350]}
+  ],
+  "chinese_starter_non_veg": [
+    {"name": "Chilli Chicken", "price": [160, 290]},
+    {"name": "Honey Chilli Chicken", "price": [160, 299]},
+    {"name": "Chicken Szechuan", "price": [160, 299]},
+    {"name": "Chicken 65", "price": [160, 299]},
+    {"name": "Chicken Lollipop", "price": [190, 360]},
+    {"name": "Dragon Chicken", "price": [210, 399]},
+    {"name": "Chicken Kurkure", "price": [170, 340]},
+    {"name": "Lemon Pepper Chicken", "price": [130, 450]}
+  ],
+  "noodle_veg": [
+    {"name": "Veg Noodle", "price": [90, 120]},
+    {"name": "Veg Schezwan Noodle", "price": [100, 130]},
+    {"name": "Paneer Noodle", "price": [100, 130]},
+    {"name": "Chilli Garlic Noodle", "price": [100, 130]},
+    {"name": "Hakka Noodle", "price": [110, 140]},
+    {"name": "Singapore Noodle", "price": [100, 130]}
+  ],
+  "noodle_non_veg": [
+    {"name": "Chicken Noodle", "price": [120, 150]},
+    {"name": "Chicken Schezwan Noodle", "price": [130, 160]},
+    {"name": "Chicken Hakka Noodle", "price": [120, 150]},
+    {"name": "Chilli Chicken Garlic Noodle", "price": [130, 160]},
+    {"name": "Chicken Singapore Noodle", "price": [130, 160]},
+    {"name": "Egg Noodle", "price": [90, 120]}
+  ],
+  "biryani_veg": [
+    {"name": "Veg Biryani", "price": [120, 180]},
+    {"name": "Paneer Biryani", "price": [140, 200]},
+    {"name": "Mushroom Biryani", "price": [140, 200]},
+    {"name": "Mix Veg Biryani", "price": [150, 200]},
+    {"name": "Special Soya Chaap Biryani", "price": [140, 180]}
+  ],
+  "biryani_non_veg": [
+    {"name": "Egg Biryani", "price": [100, 130]},
+    {"name": "Chicken Biryani", "price": [150, 200]},
+    {"name": "Chicken Mughlai Biryani", "price": [180, 230]},
+    {"name": "Mutton Biryani", "price": [null, 300]},
+    {"name": "Gen-Z Special Biryani", "price": [null, 220]}
+  ],
+  "soup_veg": [
+    {"name": "Veg Sweet Corn Soup", "price": [100]},
+    {"name": "Veg Manchow Soup", "price": [100]},
+    {"name": "Veg Hot & Sour Soup", "price": [100]},
+    {"name": "Veg Burnt Garlic Soup", "price": [100]},
+    {"name": "Veg Lemon Coriander Soup", "price": [100]}
+  ],
+  "soup_non_veg": [
+    {"name": "Chicken Manchow Soup", "price": [130]},
+    {"name": "Chicken Hot & Sour Soup", "price": [130]},
+    {"name": "Boiled Egg & Chicken Soup", "price": [130]},
+    {"name": "Chicken Burnt Garlic Soup", "price": [130]},
+    {"name": "Chicken Lemon Coriander Soup", "price": [130]}
+  ],
+  "main_course_veg": [
+    {"name": "Dal Tadka", "price": [110, 160]},
+    {"name": "Dal Makhani", "price": [130, 180]},
+    {"name": "Jeera Aloo", "price": [80, 100]},
+    {"name": "Aloo Matar", "price": [110, 150]},
+    {"name": "Gobi Aloo", "price": [120, 160]},
+    {"name": "Chana Masala", "price": [120, 160]},
+    {"name": "Paneer Butter Masala", "price": [160, 220]},
+    {"name": "Kadhai Paneer", "price": [150, 220]}
+  ],
+  "main_course_non_veg": [
+    {"name": "Kadhai Chicken", "price": [240, 360]},
+    {"name": "Chicken Tikka Masala", "price": [220, 320]},
+    {"name": "Chicken Kolhapuri", "price": [220, 340]},
+    {"name": "Chicken Rogan Josh", "price": [220, 340]},
+    {"name": "Butter Chicken", "price": [260, 380]},
+    {"name": "Chicken Curry", "price": [220, 340]},
+    {"name": "Chicken Korma", "price": [260, 380]},
+    {"name": "Egg Curry", "price": [120, 160]}
+  ]
+}
