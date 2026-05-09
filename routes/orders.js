@@ -11,7 +11,8 @@ const {
 const router = express.Router();
 
 const ALLOWED_STATUSES = ['Confirmed', 'Cooking', 'Out for Delivery', 'Delivered', 'Rejected'];
-
+const FREE_DELIVERY_THRESHOLD = 300;
+const DELIVERY_FEE = 50;
 function csvEscape(val) {
   if (val == null || val === '') return '';
   const s = String(val);
@@ -123,7 +124,7 @@ router.post('/', async (req, res) => {
     function getDeliveryCharge(orderType, orderValueForThreshold) {
       if (orderType !== 'delivery') return 0;
       if (orderValueForThreshold <= 0) return 0;
-      return orderValueForThreshold < 300 ? 50 : 0;
+      return orderValueForThreshold < FREE_DELIVERY_THRESHOLD ? DELIVERY_FEE : 0;
     }
 
     const afterDisc = Math.max(0, subtotal - discountAmount);
