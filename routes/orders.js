@@ -120,9 +120,15 @@ router.post('/', async (req, res) => {
       couponCodeSaved = normalizeCouponCode(offer.couponCode || couponTrimmed);
     }
 
+    function getDeliveryCharge(orderType, orderValueForThreshold) {
+      if (orderType !== 'delivery') return 0;
+      if (orderValueForThreshold <= 0) return 0;
+      return orderValueForThreshold < FREE_DELIVERY_THRESHOLD ? DELIVERY_FEE : 0;
+    }
+
     const afterDisc = Math.max(0, subtotal - discountAmount);
-    const tax = Math.round(afterDisc * 0.05);
-    const total = afterDisc + tax + deliveryCharge;
+    const tax = 0;
+    const total = afterDisc + tax + getDeliveryCharge(orderType, afterDisc);
 
     const clientTotal = Number(body.total);
     if (Number.isFinite(clientTotal) && Math.abs(clientTotal - total) > 2) {
