@@ -123,7 +123,7 @@ router.post('/', async (req, res) => {
     function getDeliveryCharge(orderType, orderValueForThreshold) {
       if (orderType !== 'delivery') return 0;
       if (orderValueForThreshold <= 0) return 0;
-      return orderValueForThreshold < FREE_DELIVERY_THRESHOLD ? DELIVERY_FEE : 0;
+      return orderValueForThreshold < 300 ? 50 : 0;
     }
 
     const afterDisc = Math.max(0, subtotal - discountAmount);
