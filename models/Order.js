@@ -28,6 +28,7 @@ const orderSchema = new mongoose.Schema({
   zone: String,
   sessionId: String,
   orderType: { type: String, enum: ['delivery', 'takeaway'], default: 'delivery' },
+  message: { type: String, trim: true, default: '' },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Order', orderSchema);

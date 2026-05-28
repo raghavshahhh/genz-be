@@ -50,6 +50,7 @@ function orderToCsvRows(order) {
     csvEscape(order.zone),
     csvEscape(order.sessionId),
     csvEscape(items),
+    csvEscape(order.message),
   ];
 }
 
@@ -102,6 +103,7 @@ router.post('/', async (req, res) => {
       sessionId,
       zone,
       couponCode: rawCoupon,
+      message: rawMessage,
     } = body;
 
     const subtotal = Math.max(0, Number(body.subtotal) || 0);
@@ -139,6 +141,8 @@ router.post('/', async (req, res) => {
       });
     }
 
+    const messageTrimmed = typeof rawMessage === 'string' ? rawMessage.trim().slice(0, 500) : '';
+
     const order = new Order({
       customer,
       items,
@@ -152,6 +156,7 @@ router.post('/', async (req, res) => {
       orderType,
       sessionId,
       zone,
+      message: messageTrimmed || undefined,
       orderNo: 'GENZ#' + Date.now().toString().slice(-6),
     });
     const savedOrder = await order.save();
@@ -219,6 +224,7 @@ router.get('/export/csv', adminAuth, async (req, res) => {
       'zone',
       'sessionId',
       'items',
+      'message',
     ];
     const lines = [headers.join(',')];
     for (const o of orders) {
